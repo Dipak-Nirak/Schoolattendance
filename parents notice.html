@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>श्री सार्वजनिक नमुना माध्यमिक विद्यालय - स्मार्ट हाजिरी प्रणाली</title>
+    <!-- Tailwind CSS for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS Library for Excel/CSV Import -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&display=swap');
+        body { font-family: 'Mukta', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <div>
+        <!-- Header Navigation with School Name & Address -->
+        <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid fa-graduation-cap text-3xl text-amber-300"></i>
+                    <div>
+                        <h1 class="text-lg md:text-xl font-extrabold leading-tight tracking-wide text-amber-200">
+                            श्री सार्वजनिक नमुना माध्यमिक विद्यालय
+                        </h1>
+                        <p class="text-xs text-indigo-100 font-medium">
+                            गल्याङ नगरपालिका-१, स्याङ्जा, गण्डकी प्रदेश, नेपाल
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="navAdminBtn" onclick="switchTab('admin')" class="bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 border border-indigo-400">
+                        <i class="fa-solid fa-user-shield"></i> शिक्षक / प्रशासन
+                    </button>
+                    <button id="navParentBtn" onclick="switchTab('parent')" class="bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 text-slate-900">
+                        <i class="fa-solid fa-users"></i> अभिभावक पोष्ट
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto p-4 md:p-6">
+
+            <!-- System Notification Banner -->
+            <div id="notifBanner" class="hidden mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i class="fa-solid fa-bell text-amber-600 text-xl animate-bounce"></i>
+                        <div>
+                            <h4 class="font-bold text-amber-900" id="bannerTitle">नोटिफिकेसन सुचना</h4>
+                            <p class="text-sm text-amber-800" id="bannerBody">नोटिफिकेसन विवरण...</p>
+                        </div>
+                    </div>
+                    <button onclick="closeBanner()" class="text-amber-700 hover:text-amber-900 text-lg font-bold px-2">&times;</button>
+                </div>
+            </div>
+
+            <!-- ================= TEACHER / ADMIN SECTION ================= -->
+            <section id="adminSection" class="space-y-6">
+
+                <!-- Admin Password Login Card -->
+                <div id="adminLoginCard" class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">शिक्षक / प्रशासन लगइन</h2>
+                        <p class="text-xs text-slate-500 mt-1">श्री सार्वजनिक नमुना माध्यमिक विद्यालय</p>
+                    </div>
+                    <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">गोप्य पासवर्ड</label>
+                            <input type="password" id="adminPasswordInput" required placeholder="पासवर्ड यहाँ हाल्नुहोस्" class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <p class="text-xs text-slate-400 mt-1">शुरुवाती पासवर्ड: <span class="font-mono bg-slate-100 px-1 rounded text-slate-700">admin123</span></p>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl transition shadow-md">
+                            लगइन गर्नुहोस्
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Main Admin Panel (Hidden until login) -->
+                <div id="adminDashboard" class="hidden space-y-6">
+                    
+                    <!-- Admin Header & Logout -->
+                    <div class="bg-indigo-900 text-white p-4 rounded-xl flex flex-wrap justify-between items-center gap-3">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-user-check text-2xl text-emerald-400"></i>
+                            <div>
+                                <h3 class="font-bold text-lg">शिक्षक / प्रशासन नियन्त्रण प्यानल</h3>
+                                <p class="text-xs text-indigo-200">श्री सार्वजनिक नमुना मा.वि., गल्याङ-१, स्याङ्जा</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openChangePassModal()" class="bg-indigo-800 hover:bg-indigo-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                <i class="fa-solid fa-key"></i> पासवर्ड फेर्नुहोस्
+                            </button>
+                            <button onclick="adminLogout()" class="bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                <i class="fa-solid fa-right-from-bracket"></i> लगआउट
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Sub Tabs -->
+                    <div class="flex flex-wrap border-b border-slate-300 gap-2">
+                        <button id="tabDailyBtn" onclick="switchAdminSubTab('daily')" class="px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm">
+                            <i class="fa-solid fa-calendar-day"></i> १. विद्यालय दैनिक हाजिरी
+                        </button>
+                        <button id="tabSubjectAttBtn" onclick="switchAdminSubTab('subjectAtt')" class="px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm">
+                            <i class="fa-solid fa-book"></i> २. विषयगत उपस्थिति
+                        </button>
+                        <button id="tabSubjectsBtn" onclick="switchAdminSubTab('subjects')" class="px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm">
+                            <i class="fa-solid fa-book-bookmark"></i> ३. विषय सूची (Add Subjects)
+                        </button>
+                        <button id="tabPersonalBtn" onclick="switchAdminSubTab('personal')" class="px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm">
+                            <i class="fa-solid fa-comment-dots"></i> ४. व्यक्तिगत विशेष सूचना
+                        </button>
+                        <button id="tabStudentsBtn" onclick="switchAdminSubTab('students')" class="px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm">
+                            <i class="fa-solid fa-file-excel"></i> ५. विद्यार्थी दर्ता / एक्सेल
+                        </button>
+                    </div>
+
+                    <!-- SUB TAB 1: Daily School Attendance -->
+                    <div id="adminDailyTab" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg">विद्यालय दैनिक उपस्थिति (Daily Attendance)</h3>
+                                <p class="text-xs text-slate-500">आज विद्यार्थी विद्यालय आयो वा आएन हाजिरी गर्नुहोस्</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="date" id="dailyAttDate" class="border rounded-lg px-3 py-1.5 text-sm font-semibold">
+                                <button onclick="saveDailyAttendance()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition shadow">
+                                    <i class="fa-solid fa-paper-plane"></i> सेभ र नोटिफिकेसन पठाउनुहोस्
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-sm font-bold border-b">
+                                        <th class="p-3">रोल नं</th>
+                                        <th class="p-3">विद्यार्थीको नाम</th>
+                                        <th class="p-3">कक्षा</th>
+                                        <th class="p-3">अभिभावक कोड (PIN)</th>
+                                        <th class="p-3 text-center">उपस्थिति अवस्था</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dailyAttendanceList">
+                                    <!-- Dynamic Daily Attendance Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SUB TAB 2: Subject-wise Attendance -->
+                    <div id="adminSubjectAttTab" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-lg">विषयगत/पिरियड उपस्थिति (Subject Attendance)</h3>
+                                <p class="text-xs text-slate-500">तपाईंले थप्नुभएका विषयहरूको सूचीबाट छानेर उपस्थिति लिनुहोस्</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select id="subjectSelect" class="border rounded-lg px-3 py-1.5 text-sm font-semibold bg-slate-50">
+                                    <!-- Dynamic subjects -->
+                                </select>
+                                <input type="date" id="subjectAttDate" class="border rounded-lg px-3 py-1.5 text-sm font-semibold">
+                                <button onclick="saveSubjectAttendance()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg text-sm font-semibold transition shadow">
+                                    <i class="fa-solid fa-paper-plane"></i> विषय हाजिरी पठाउनुहोस्
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-sm font-bold border-b">
+                                        <th class="p-3">रोल नं</th>
+                                        <th class="p-3">विद्यार्थीको नाम</th>
+                                        <th class="p-3">कक्षा</th>
+                                        <th class="p-3">विद्यालय स्थिति</th>
+                                        <th class="p-3 text-center">विषय उपस्थिति</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectAttendanceList">
+                                    <!-- Dynamic Subject Attendance Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SUB TAB 3: Dynamic Subject Manager -->
+                    <div id="adminSubjectsTab" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-lg mb-2">विद्यालयका विषयहरू थप्ने तथा व्यवस्थापन गर्ने</h3>
+                        <p class="text-xs text-slate-500 mb-4">तपाईंलाई आवश्यक पर्ने नयाँ विषयहरू (जस्तै: कम्प्युटर, ऐच्छिक गणित, लेखा, आदि) यहाँ थप्न सक्नुहुन्छ।</p>
+
+                        <form onsubmit="addNewSubject(event)" class="flex gap-2 mb-6">
+                            <input type="text" id="newSubjectInput" required placeholder="विषयको नाम (उदा: कम्प्युटर विज्ञान)" class="border px-4 py-2 rounded-xl text-sm flex-grow max-w-md">
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow">
+                                + विषय थप्नुहोस्
+                            </button>
+                        </form>
+
+                        <h4 class="font-bold text-slate-700 text-md mb-2">थपिएका विषयहरूको सूची</h4>
+                        <div class="overflow-x-auto max-w-xl">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-sm font-bold border-b">
+                                        <th class="p-3">क्र.सं.</th>
+                                        <th class="p-3">विषयको नाम</th>
+                                        <th class="p-3 text-center">कार्य</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectsListTable">
+                                    <!-- Dynamic Subjects -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- SUB TAB 4: Personal / Behavioral Message to Individual Parent -->
+                    <div id="adminPersonalTab" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="mb-4">
+                            <h3 class="font-bold text-slate-800 text-lg">विद्यार्थीको व्यक्तिगत आचरण तथा विशेष सूचना पठाउने</h3>
+                            <p class="text-xs text-slate-500">कक्षामा ध्यान नदिएको, होमवर्क नगरेको वा अन्य विशेष कुरा तोकिएको अभिभावकलाई मात्र व्यक्तिगत रूपमा पठाउनुहोस्</p>
+                        </div>
+
+                        <form onsubmit="sendPersonalMessage(event)" class="space-y-4 bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">विद्यार्थी छान्नुहोस् *</label>
+                                    <select id="personalStudentSelect" required class="w-full border px-3 py-2 rounded-lg text-sm bg-white">
+                                        <!-- Dynamic Options -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">सम्बन्धित विषय / क्षेत्र *</label>
+                                    <select id="personalSubjectSelect" required class="w-full border px-3 py-2 rounded-lg text-sm bg-white">
+                                        <option value="सामान्य आचरण / कक्षा क्रियाकलाप">सामान्य आचरण / कक्षा क्रियाकलाप</option>
+                                        <option value="गृहकार्य (Homework)">गृहकार्य (Homework)</option>
+                                        <!-- Dynamic subjects appended -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">मिति *</label>
+                                    <input type="date" id="personalMsgDate" required class="w-full border px-3 py-2 rounded-lg text-sm bg-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">विशेष सन्देश / विवरण (अभिभावकलाई पठाउने) *</label>
+                                <textarea id="personalMsgBody" rows="3" required placeholder="उदा: आज गणितको कक्षामा ध्यान दिनुभएको छैन र गृहकार्य पनि गर्नुभएको छैन।" class="w-full border px-3 py-2 rounded-lg text-sm bg-white"></textarea>
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow transition flex items-center gap-2 ml-auto">
+                                    <i class="fa-solid fa-paper-plane"></i> व्यक्तिगत म्यासेज अभिभावकलाई पठाउनुहोस्
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- SUB TAB 5: Student Register & Excel Import -->
+                    <div id="adminStudentsTab" class="hidden space-y-6">
+                        
+                        <!-- Excel / CSV Bulk Upload Card -->
+                        <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl shadow-sm">
+                            <div class="flex flex-wrap justify-between items-center gap-4 mb-3">
+                                <div>
+                                    <h3 class="font-bold text-emerald-900 text-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-file-excel text-emerald-600 text-xl"></i> १. बल्क एक्सेल / CSV फाइल अपलोड (Bulk Excel Import)
+                                    </h3>
+                                    <p class="text-xs text-emerald-700">एकैपटक सयौँ विद्यार्थीको डाटा एक्सेलबाट थप्नुहोस्। हेडरमा <b>Roll, Name, Class, Pin</b> अनिवार्य हुनुपर्छ।</p>
+                                </div>
+                                <button onclick="downloadSampleExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                                    <i class="fa-solid fa-download"></i> नमुना एक्सेल डाउनलोड गर्नुहोस् (Sample File)
+                                </button>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+                                <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" class="border border-emerald-300 bg-white px-3 py-2 rounded-xl text-sm w-full md:w-auto">
+                                <button onclick="importExcelStudents()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition shadow">
+                                    <i class="fa-solid fa-upload"></i> एक्सेल फाइल अपलोड गर्नुहोस्
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Single Manual Student Entry -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 text-lg mb-4">२. व्यक्तिगत रूपमा विद्यार्थी दर्ता (Manual Entry)</h3>
+                            <form onsubmit="addNewStudent(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">रोल नम्बर *</label>
+                                    <input type="number" id="newRoll" required placeholder="101" class="w-full border px-3 py-2 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">पुरा नाम *</label>
+                                    <input type="text" id="newName" required placeholder="राम शर्मा" class="w-full border px-3 py-2 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">कक्षा *</label>
+                                    <input type="text" id="newClass" required placeholder="कक्षा १०" class="w-full border px-3 py-2 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">विशेष अभिभावक कोड (PIN) *</label>
+                                    <input type="text" id="newPin" required placeholder="उदा: 101101 वा STU-101" class="w-full border px-3 py-2 rounded-lg text-sm">
+                                </div>
+                                <div class="md:col-span-4 text-right">
+                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold">
+                                        + विद्यार्थी थप्नुहोस्
+                                    </button>
+                                </div>
+                            </form>
+
+                            <h4 class="font-bold text-slate-700 text-md mb-2">दर्ता भएका विद्यार्थी सूची</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-600 text-sm font-bold border-b">
+                                            <th class="p-3">रोल नं</th>
+                                            <th class="p-3">नाम</th>
+                                            <th class="p-3">कक्षा</th>
+                                            <th class="p-3">अभिभावक विशेष PIN</th>
+                                            <th class="p-3 text-center">कार्य</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="registeredStudentsList">
+                                        <!-- Dynamic List -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- ================= PARENT SECTION ================= -->
+            <section id="parentSection" class="hidden space-y-6">
+
+                <!-- Parent Login Form -->
+                <div id="parentLoginCard" class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">अभिभावक पोष्ट लगइन</h2>
+                        <p class="text-xs text-amber-800 font-semibold mt-1">श्री सार्वजनिक नमुना माध्यमिक विद्यालय</p>
+                        <p class="text-xs text-slate-500 mt-1">रोल नं र विद्यालयले दिएको विशेष PIN कोड हाल्नुहोस्</p>
+                    </div>
+                    <form onsubmit="handleParentLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">विद्यार्थीको रोल नम्बर</label>
+                            <input type="number" id="parentRollInput" required placeholder="उदा: 101" class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">विशेष अभिभावक PIN (Access Code)</label>
+                            <input type="text" id="parentPinInput" required placeholder="उदा: 101101 वा STU-101" class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2.5 rounded-xl transition shadow-md">
+                            प्रवेश गर्नुहोस्
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Parent Dashboard (Hidden until login) -->
+                <div id="parentDashboard" class="hidden space-y-6">
+                    <!-- Parent Header -->
+                    <div class="bg-amber-500 text-slate-900 p-5 rounded-2xl flex flex-wrap justify-between items-center gap-4 shadow-md">
+                        <div>
+                            <span class="text-xs uppercase font-bold bg-slate-900 text-amber-300 px-2 py-0.5 rounded">श्री सार्वजनिक नमुना मा.वि.</span>
+                            <h2 class="text-2xl font-extrabold mt-1" id="pStudentName">विद्यार्थीको नाम</h2>
+                            <p class="text-sm font-semibold" id="pStudentDetails">रोल नं: - | कक्षा: -</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="pNotifBtn" onclick="requestNotificationPermission()" class="bg-slate-900 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-bell"></i> नोटिफिकेसन सुचारु गर्नुहोस्
+                            </button>
+                            <button onclick="parentLogout()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-semibold transition">
+                                लगआउट
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Parent Summary Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                            <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl text-2xl">
+                                <i class="fa-solid fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold">आजको विद्यालय उपस्थिति स्थिति</p>
+                                <h4 class="text-xl font-extrabold" id="pTodayStatus">अपडेट छैन</h4>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-4">
+                            <div class="p-3 bg-amber-100 text-amber-700 rounded-xl text-2xl">
+                                <i class="fa-solid fa-comment-dots"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 font-semibold">व्यक्तिगत विशेष सन्देशहरू</p>
+                                <h4 class="text-xl font-extrabold" id="pPersonalCount">० वटा</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Special Messages Box for Parent -->
+                    <div class="bg-amber-50 border border-amber-200 p-5 rounded-2xl shadow-sm">
+                        <h3 class="font-bold text-amber-900 text-lg mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-envelope text-amber-600"></i> शिक्षकबाट प्राप्त व्यक्तिगत विशेष सूचनाहरू (Remarks)
+                        </h3>
+                        <div id="parentPersonalMessagesList" class="space-y-3">
+                            <!-- Dynamic personal messages -->
+                        </div>
+                    </div>
+
+                    <!-- Parent Attendance Records History -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-lg mb-4">उपस्थिति तथा गतिविधि इतिहास (Attendance Log)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-600 text-sm font-bold border-b">
+                                        <th class="p-3">मिति</th>
+                                        <th class="p-3">प्रकार</th>
+                                        <th class="p-3">विषय / विवरण</th>
+                                        <th class="p-3">अवस्था</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="parentLogsList">
+                                    <!-- Dynamic Log Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- PUBLIC DEVELOPER FOOTER -->
+    <footer class="bg-slate-900 text-slate-300 py-4 px-4 mt-8 text-center text-xs md:text-sm border-t border-slate-800">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                <span class="font-semibold text-slate-400">© श्री सार्वजनिक नमुना माध्यमिक विद्यालय - हाजिरी प्रणाली</span>
+            </div>
+            <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 text-amber-300 font-medium">
+                Developed by <span class="font-bold text-white">Tikaram Basyal</span> | Contact: <a href="tel:+9779846792473" class="underline hover:text-amber-200">+977-9846792473</a> / <a href="mailto:pantaraju51@gmail.com" class="underline hover:text-amber-200">pantaraju51@gmail.com</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Change Password Modal -->
+    <div id="changePassModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <h3 class="font-bold text-lg text-slate-800 mb-4">शिक्षक पासवर्ड फेर्नुहोस्</h3>
+            <form onsubmit="handleChangePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">हालको पासवर्ड</label>
+                    <input type="password" id="currPassInput" required class="w-full border px-3 py-2 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">नयाँ पासवर्ड</label>
+                    <input type="password" id="newPassInput" required class="w-full border px-3 py-2 rounded-lg text-sm">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeChangePassModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-200">रद्द</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white">सेभ गर्नुहोस्</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // ================= SYSTEM INITIALIZATION & STATE =================
+        const DEFAULT_ADMIN_PASS = "admin123";
+        
+        let state = {
+            adminPassword: localStorage.getItem("adminPassword") || DEFAULT_ADMIN_PASS,
+            isAdminLoggedIn: false,
+            currentParentStudent: null,
+            subjects: JSON.parse(localStorage.getItem("subjects")) || ["नेपाली", "अंग्रेजी", "गणित", "विज्ञान", "सामाजिक"],
+            students: JSON.parse(localStorage.getItem("students")) || [
+                { roll: 101, name: "राम शर्मा", class: "१०", pin: "101101" },
+                { roll: 102, name: "सीता श्रेष्ठ", class: "१०", pin: "102102" },
+                { roll: 103, name: "हरि खड्का", class: "१०", pin: "103103" }
+            ],
+            attendance: JSON.parse(localStorage.getItem("attendance")) || [],
+            personalMessages: JSON.parse(localStorage.getItem("personalMessages")) || []
+        };
+
+        // Initialize App
+        document.addEventListener("DOMContentLoaded", () => {
+            saveToStorage();
+            setTodayDates();
+            renderSubjectsTable();
+            updateSubjectDropdowns();
+            renderStudentsTable();
+            renderDailyAttendanceTable();
+            renderSubjectAttendanceTable();
+            renderPersonalStudentSelect();
+            checkNotificationSupport();
+        });
+
+        function saveToStorage() {
+            localStorage.setItem("adminPassword", state.adminPassword);
+            localStorage.setItem("subjects", JSON.stringify(state.subjects));
+            localStorage.setItem("students", JSON.stringify(state.students));
+            localStorage.setItem("attendance", JSON.stringify(state.attendance));
+            localStorage.setItem("personalMessages", JSON.stringify(state.personalMessages));
+        }
+
+        function setTodayDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("dailyAttDate").value = today;
+            document.getElementById("subjectAttDate").value = today;
+            document.getElementById("personalMsgDate").value = today;
+        }
+
+        // ================= NAVIGATION =================
+        function switchTab(tab) {
+            if(tab === 'admin') {
+                document.getElementById("adminSection").classList.remove("hidden");
+                document.getElementById("parentSection").classList.add("hidden");
+                document.getElementById("navAdminBtn").className = "bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 border border-indigo-400";
+                document.getElementById("navParentBtn").className = "bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 text-slate-900";
+            } else {
+                document.getElementById("adminSection").classList.add("hidden");
+                document.getElementById("parentSection").classList.remove("hidden");
+                document.getElementById("navParentBtn").className = "bg-amber-600 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 text-slate-900 border border-slate-900";
+                document.getElementById("navAdminBtn").className = "bg-indigo-800 hover:bg-indigo-900 px-3 py-1.5 rounded-lg text-sm font-semibold transition flex items-center gap-1.5";
+            }
+        }
+
+        function switchAdminSubTab(sub) {
+            document.getElementById("adminDailyTab").classList.add("hidden");
+            document.getElementById("adminSubjectAttTab").classList.add("hidden");
+            document.getElementById("adminSubjectsTab").classList.add("hidden");
+            document.getElementById("adminPersonalTab").classList.add("hidden");
+            document.getElementById("adminStudentsTab").classList.add("hidden");
+
+            document.getElementById("tabDailyBtn").className = "px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm";
+            document.getElementById("tabSubjectAttBtn").className = "px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm";
+            document.getElementById("tabSubjectsBtn").className = "px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm";
+            document.getElementById("tabPersonalBtn").className = "px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm";
+            document.getElementById("tabStudentsBtn").className = "px-4 py-2 font-bold text-slate-500 hover:text-indigo-600 text-sm";
+
+            if(sub === 'daily') {
+                document.getElementById("adminDailyTab").classList.remove("hidden");
+                document.getElementById("tabDailyBtn").className = "px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm";
+                renderDailyAttendanceTable();
+            } else if(sub === 'subjectAtt') {
+                document.getElementById("adminSubjectAttTab").classList.remove("hidden");
+                document.getElementById("tabSubjectAttBtn").className = "px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm";
+                updateSubjectDropdowns();
+                renderSubjectAttendanceTable();
+            } else if(sub === 'subjects') {
+                document.getElementById("adminSubjectsTab").classList.remove("hidden");
+                document.getElementById("tabSubjectsBtn").className = "px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm";
+                renderSubjectsTable();
+            } else if(sub === 'personal') {
+                document.getElementById("adminPersonalTab").classList.remove("hidden");
+                document.getElementById("tabPersonalBtn").className = "px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm";
+                renderPersonalStudentSelect();
+                updateSubjectDropdowns();
+            } else {
+                document.getElementById("adminStudentsTab").classList.remove("hidden");
+                document.getElementById("tabStudentsBtn").className = "px-4 py-2 font-bold text-indigo-600 border-b-2 border-indigo-600 text-sm";
+            }
+        }
+
+        // ================= ADMIN LOGIN & PASS MANAGEMENT =================
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const pass = document.getElementById("adminPasswordInput").value;
+            if(pass === state.adminPassword) {
+                state.isAdminLoggedIn = true;
+                document.getElementById("adminLoginCard").classList.add("hidden");
+                document.getElementById("adminDashboard").classList.remove("hidden");
+                document.getElementById("adminPasswordInput").value = "";
+            } else {
+                alert("गलत पासवर्ड! कृपया सही पासवर्ड हाल्नुहोस्।");
+            }
+        }
+
+        function adminLogout() {
+            state.isAdminLoggedIn = false;
+            document.getElementById("adminDashboard").classList.add("hidden");
+            document.getElementById("adminLoginCard").classList.remove("hidden");
+        }
+
+        function openChangePassModal() {
+            document.getElementById("changePassModal").classList.remove("hidden");
+        }
+
+        function closeChangePassModal() {
+            document.getElementById("changePassModal").classList.add("hidden");
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const curr = document.getElementById("currPassInput").value;
+            const newP = document.getElementById("newPassInput").value;
+
+            if(curr !== state.adminPassword) {
+                alert("हालको पासवर्ड मिलेन!");
+                return;
+            }
+            state.adminPassword = newP;
+            saveToStorage();
+            alert("पासवर्ड सफलतापूर्वक परिवर्तन भयो!");
+            closeChangePassModal();
+            document.getElementById("currPassInput").value = "";
+            document.getElementById("newPassInput").value = "";
+        }
+
+        // ================= SUBJECT MANAGEMENT =================
+        function renderSubjectsTable() {
+            const table = document.getElementById("subjectsListTable");
+            table.innerHTML = "";
+            state.subjects.forEach((sub, index) => {
+                table.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 text-sm">
+                        <td class="p-3 font-bold">${index + 1}</td>
+                        <td class="p-3 font-semibold">${sub}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteSubject('${sub}')" class="text-rose-600 hover:text-rose-800 text-xs font-bold">
+                                <i class="fa-solid fa-trash"></i> हटाउनुहोस्
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addNewSubject(e) {
+            e.preventDefault();
+            const subInput = document.getElementById("newSubjectInput");
+            const subName = subInput.value.trim();
+
+            if(state.subjects.includes(subName)) {
+                alert("यो विषय पहिले नै सूचीमा छ!");
+                return;
+            }
+
+            state.subjects.push(subName);
+            saveToStorage();
+            renderSubjectsTable();
+            updateSubjectDropdowns();
+            subInput.value = "";
+            alert(`नयाँ विषय "${subName}" सफलतापूर्वक थपियो!`);
+        }
+
+        function deleteSubject(subName) {
+            if(state.subjects.length <= 1) {
+                alert("कम्तिमा एउटा विषय हुनुपर्छ!");
+                return;
+            }
+            if(confirm(`के तपाईं "${subName}" विषय हटाउन चाहनुहुन्छ?`)) {
+                state.subjects = state.subjects.filter(s => s !== subName);
+                saveToStorage();
+                renderSubjectsTable();
+                updateSubjectDropdowns();
+            }
+        }
+
+        function updateSubjectDropdowns() {
+            const subjSelect = document.getElementById("subjectSelect");
+            const persSubjSelect = document.getElementById("personalSubjectSelect");
+
+            if(subjSelect) {
+                subjSelect.innerHTML = "";
+                state.subjects.forEach(sub => {
+                    subjSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
+
+            if(persSubjSelect) {
+                persSubjSelect.innerHTML = `
+                    <option value="सामान्य आचरण / कक्षा क्रियाकलाप">सामान्य आचरण / कक्षा क्रियाकलाप</option>
+                    <option value="गृहकार्य (Homework)">गृहकार्य (Homework)</option>
+                `;
+                state.subjects.forEach(sub => {
+                    persSubjSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
+        }
+
+        // ================= EXCEL / CSV BULK IMPORT =================
+        function downloadSampleExcel() {
+            const data = [
+                { Roll: 101, Name: "राम शर्मा", Class: "१०", Pin: "101101" },
+                { Roll: 102, Name: "सीता श्रेष्ठ", Class: "१०", Pin: "102102" },
+                { Roll: 103, Name: "हरि खड्का", Class: "१०", Pin: "103103" }
+            ];
+            const worksheet = XLSX.utils.json_to_sheet(data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+            XLSX.writeFile(workbook, "Sample_Students_List.xlsx");
+        }
+
+        function importExcelStudents() {
+            const fileInput = document.getElementById("excelFileInput");
+            const file = fileInput.files[0];
+
+            if(!file) {
+                alert("कृपया पहिले एक्सेल वा CSV फाइल छान्नुहोस्!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+
+                    if(rows.length === 0) {
+                        alert("फाइल खाली छ वा डाटा भेटिएन!");
+                        return;
+                    }
+
+                    let addedCount = 0;
+                    rows.forEach(r => {
+                        const roll = parseInt(r.Roll || r.roll || r['रोल नम्बर']);
+                        const name = r.Name || r.name || r['नाम'];
+                        const cls = r.Class || r.class || r['कक्षा'];
+                        const pin = String(r.Pin || r.pin || r['पिन'] || r['PIN'] || roll);
+
+                        if(roll && name && cls) {
+                            const existingIndex = state.students.findIndex(s => s.roll === roll);
+                            if(existingIndex >= 0) {
+                                state.students[existingIndex] = { roll, name, class: cls, pin };
+                            } else {
+                                state.students.push({ roll, name, class: cls, pin });
+                            }
+                            addedCount++;
+                        }
+                    });
+
+                    saveToStorage();
+                    renderStudentsTable();
+                    renderDailyAttendanceTable();
+                    renderSubjectAttendanceTable();
+                    fileInput.value = "";
+                    alert(`सफलतापूर्वक ${addedCount} जना विद्यार्थीहरूको डाटा अपलोड भयो!`);
+                } catch (err) {
+                    alert("एक्सेल फाइल पढ्न सकिएन। नमुना फाइल अनुसारको ढाँचा प्रयोग गर्नुहोस्।");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ================= STUDENT MANAGEMENT =================
+        function renderStudentsTable() {
+            const list = document.getElementById("registeredStudentsList");
+            if(!list) return;
+            list.innerHTML = "";
+            state.students.forEach(st => {
+                list.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 text-sm">
+                        <td class="p-3 font-bold text-indigo-600">${st.roll}</td>
+                        <td class="p-3 font-semibold">${st.name}</td>
+                        <td class="p-3">${st.class}</td>
+                        <td class="p-3 font-mono font-bold text-amber-700 bg-amber-50 rounded">${st.pin}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteStudent(${st.roll})" class="text-rose-600 hover:text-rose-800 text-xs font-bold">
+                                <i class="fa-solid fa-trash"></i> हटाउनुहोस्
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            renderPersonalStudentSelect();
+        }
+
+        function addNewStudent(e) {
+            e.preventDefault();
+            const roll = parseInt(document.getElementById("newRoll").value);
+            const name = document.getElementById("newName").value;
+            const cls = document.getElementById("newClass").value;
+            const pin = document.getElementById("newPin").value;
+
+            if(state.students.find(s => s.roll === roll)) {
+                alert("यो रोल नम्बरको विद्यार्थी पहिले नै दर्ता छ!");
+                return;
+            }
+
+            state.students.push({ roll, name, class: cls, pin });
+            saveToStorage();
+            renderStudentsTable();
+            renderDailyAttendanceTable();
+            renderSubjectAttendanceTable();
+
+            document.getElementById("newRoll").value = "";
+            document.getElementById("newName").value = "";
+            document.getElementById("newClass").value = "";
+            document.getElementById("newPin").value = "";
+            alert("नयाँ विद्यार्थी थपियो!");
+        }
+
+        function deleteStudent(roll) {
+            if(confirm("के तपाईं यो विद्यार्थीको डाटा हटाउन चाहनुहुन्छ?")) {
+                state.students = state.students.filter(s => s.roll !== roll);
+                saveToStorage();
+                renderStudentsTable();
+                renderDailyAttendanceTable();
+                renderSubjectAttendanceTable();
+            }
+        }
+
+        // ================= ATTENDANCE MARKING (ADMIN) =================
+        function renderDailyAttendanceTable() {
+            const list = document.getElementById("dailyAttendanceList");
+            if(!list) return;
+            const date = document.getElementById("dailyAttDate").value;
+            list.innerHTML = "";
+
+            state.students.forEach(st => {
+                const rec = state.attendance.find(a => a.roll === st.roll && a.date === date && a.type === 'daily');
+                const isPresent = rec ? rec.status === 'Present' : true;
+
+                list.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 text-sm">
+                        <td class="p-3 font-bold">${st.roll}</td>
+                        <td class="p-3 font-semibold">${st.name}</td>
+                        <td class="p-3">${st.class}</td>
+                        <td class="p-3 font-mono text-slate-500">${st.pin}</td>
+                        <td class="p-3 text-center">
+                            <div class="inline-flex rounded-md shadow-sm" role="group">
+                                <button type="button" onclick="setDailyStatus(${st.roll}, 'Present')" class="px-3 py-1 text-xs font-bold rounded-l-lg border ${isPresent ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}">
+                                    उपस्थित (P)
+                                </button>
+                                <button type="button" onclick="setDailyStatus(${st.roll}, 'Absent')" class="px-3 py-1 text-xs font-bold rounded-r-lg border ${!isPresent ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}">
+                                    अनुपस्थित (A)
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function setDailyStatus(roll, status) {
+            const date = document.getElementById("dailyAttDate").value;
+            let rec = state.attendance.find(a => a.roll === roll && a.date === date && a.type === 'daily');
+            if(rec) {
+                rec.status = status;
+            } else {
+                state.attendance.push({ roll, date, type: 'daily', subject: 'विद्यालय', status });
+            }
+            renderDailyAttendanceTable();
+        }
+
+        function saveDailyAttendance() {
+            const date = document.getElementById("dailyAttDate").value;
+            state.students.forEach(st => {
+                let rec = state.attendance.find(a => a.roll === st.roll && a.date === date && a.type === 'daily');
+                if(!rec) {
+                    state.attendance.push({ roll: st.roll, date, type: 'daily', subject: 'विद्यालय', status: 'Present' });
+                }
+            });
+
+            saveToStorage();
+            alert("दैनिक विद्यालय हाजिरी सुरक्षित गरियो!");
+        }
+
+        function renderSubjectAttendanceTable() {
+            const list = document.getElementById("subjectAttendanceList");
+            if(!list) return;
+            const date = document.getElementById("subjectAttDate").value;
+            const subject = document.getElementById("subjectSelect").value;
+            list.innerHTML = "";
+
+            state.students.forEach(st => {
+                const schoolRec = state.attendance.find(a => a.roll === st.roll && a.date === date && a.type === 'daily');
+                const isSchoolPresent = schoolRec ? schoolRec.status === 'Present' : true;
+
+                const subRec = state.attendance.find(a => a.roll === st.roll && a.date === date && a.type === 'subject' && a.subject === subject);
+                const isSubPresent = subRec ? subRec.status === 'Present' : true;
+
+                list.innerHTML += `
+                    <tr class="border-b hover:bg-slate-50 text-sm">
+                        <td class="p-3 font-bold">${st.roll}</td>
+                        <td class="p-3 font-semibold">${st.name}</td>
+                        <td class="p-3">${st.class}</td>
+                        <td class="p-3">
+                            <span class="text-xs px-2 py-0.5 rounded font-bold ${isSchoolPresent ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                ${isSchoolPresent ? 'विद्यालय उपस्थित' : 'विद्यालय अनुपस्थित'}
+                            </span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <div class="inline-flex rounded-md shadow-sm">
+                                <button type="button" onclick="setSubjectStatus(${st.roll}, 'Present')" class="px-3 py-1 text-xs font-bold rounded-l-lg border ${isSubPresent ? 'bg-indigo-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}">
+                                    विषय उपस्थित
+                                </button>
+                                <button type="button" onclick="setSubjectStatus(${st.roll}, 'Absent')" class="px-3 py-1 text-xs font-bold rounded-r-lg border ${!isSubPresent ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}">
+                                    विषय अनुपस्थित
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function setSubjectStatus(roll, status) {
+            const date = document.getElementById("subjectAttDate").value;
+            const subject = document.getElementById("subjectSelect").value;
+            let rec = state.attendance.find(a => a.roll === roll && a.date === date && a.type === 'subject' && a.subject === subject);
+            if(rec) {
+                rec.status = status;
+            } else {
+                state.attendance.push({ roll, date, type: 'subject', subject, status });
+            }
+            renderSubjectAttendanceTable();
+        }
+
+        function saveSubjectAttendance() {
+            const date = document.getElementById("subjectAttDate").value;
+            const subject = document.getElementById("subjectSelect").value;
+
+            state.students.forEach(st => {
+                let rec = state.attendance.find(a => a.roll === st.roll && a.date === date && a.type === 'subject' && a.subject === subject);
+                if(!rec) {
+                    state.attendance.push({ roll: st.roll, date, type: 'subject', subject, status: 'Present' });
+                }
+            });
+
+            saveToStorage();
+            alert(`${subject} विषयको हाजिरी सुरक्षित गरियो!`);
+        }
+
+        // ================= PERSONAL / BEHAVIORAL MESSAGES =================
+        function renderPersonalStudentSelect() {
+            const sel = document.getElementById("personalStudentSelect");
+            if(!sel) return;
+            sel.innerHTML = "";
+            state.students.forEach(st => {
+                sel.innerHTML += `<option value="${st.roll}">रोल नं: ${st.roll} - ${st.name} (${st.class})</option>`;
+            });
+        }
+
+        function sendPersonalMessage(e) {
+            e.preventDefault();
+            const roll = parseInt(document.getElementById("personalStudentSelect").value);
+            const subject = document.getElementById("personalSubjectSelect").value;
+            const date = document.getElementById("personalMsgDate").value;
+            const message = document.getElementById("personalMsgBody").value;
+
+            const st = state.students.find(s => s.roll === roll);
+            if(!st) return;
+
+            const newMsg = { id: Date.now(), roll, date, subject, message };
+            state.personalMessages.push(newMsg);
+            saveToStorage();
+
+            alert(`विद्यार्थी ${st.name} का अभिभावकलाई व्यक्तिगत विशेष सूचना सफलतापूर्वक पठाइयो!`);
+            document.getElementById("personalMsgBody").value = "";
+
+            if(state.currentParentStudent && state.currentParentStudent.roll === roll) {
+                renderParentDashboard();
+                showBannerNotification(`विशेष सूचना: ${st.name}`, message);
+                sendBrowserNotification(`विशेष सूचना: ${st.name}`, message);
+            }
+        }
+
+        // ================= PARENT PORTAL LOGIC =================
+        function handleParentLogin(e) {
+            e.preventDefault();
+            const roll = parseInt(document.getElementById("parentRollInput").value);
+            const pin = document.getElementById("parentPinInput").value.trim();
+
+            const st = state.students.find(s => s.roll === roll && String(s.pin).trim() === pin);
+
+            if(st) {
+                state.currentParentStudent = st;
+                document.getElementById("parentLoginCard").classList.add("hidden");
+                document.getElementById("parentDashboard").classList.remove("hidden");
+                
+                document.getElementById("pStudentName").innerText = st.name;
+                document.getElementById("pStudentDetails").innerText = `रोल नं: ${st.roll} | कक्षा: ${st.class}`;
+
+                renderParentDashboard();
+            } else {
+                alert("रोल नम्बर वा विशेष अभिभावक PIN मिलेन! कृपया विद्यालयले प्रदान गरेको सही PIN हाल्नुहोस्।");
+            }
+        }
+
+        function parentLogout() {
+            state.currentParentStudent = null;
+            document.getElementById("parentDashboard").classList.add("hidden");
+            document.getElementById("parentLoginCard").classList.remove("hidden");
+        }
+
+        function renderParentDashboard() {
+            if(!state.currentParentStudent) return;
+            const st = state.currentParentStudent;
+            const today = new Date().toISOString().split('T')[0];
+
+            // Today's School Status
+            const todaySchool = state.attendance.find(a => a.roll === st.roll && a.date === today && a.type === 'daily');
+            const todayElem = document.getElementById("pTodayStatus");
+            if(todaySchool) {
+                todayElem.innerText = todaySchool.status === 'Present' ? 'उपस्थित (Present)' : 'अनुपस्थित (Absent)';
+                todayElem.className = `text-xl font-extrabold ${todaySchool.status === 'Present' ? 'text-emerald-600' : 'text-rose-600'}`;
+            } else {
+                todayElem.innerText = 'आजको हाजिरी भइसकेको छैन';
+                todayElem.className = 'text-xl font-extrabold text-slate-500';
+            }
+
+            // Personal Messages Render
+            const myPersonalMsgs = state.personalMessages.filter(m => m.roll === st.roll).reverse();
+            document.getElementById("pPersonalCount").innerText = `${myPersonalMsgs.length} वटा`;
+
+            const personalListElem = document.getElementById("parentPersonalMessagesList");
+            personalListElem.innerHTML = "";
+
+            if(myPersonalMsgs.length === 0) {
+                personalListElem.innerHTML = `<p class="text-xs text-slate-500 italic">कुनै व्यक्तिगत विशेष सूचना छैन।</p>`;
+            } else {
+                myPersonalMsgs.forEach(pm => {
+                    personalListElem.innerHTML += `
+                        <div class="bg-white p-3.5 rounded-xl border border-amber-200 shadow-xs flex flex-col gap-1">
+                            <div class="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                                <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">${pm.subject}</span>
+                                <span><i class="fa-regular fa-calendar"></i> ${pm.date}</span>
+                            </div>
+                            <p class="text-sm text-slate-800 font-medium mt-1">${pm.message}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            // Logs Table
+            const logsList = document.getElementById("parentLogsList");
+            logsList.innerHTML = "";
+
+            const studentLogs = state.attendance.filter(a => a.roll === st.roll).reverse();
+
+            if(studentLogs.length === 0 && myPersonalMsgs.length === 0) {
+                logsList.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">कुनै रेकर्ड भेटिएन</td></tr>`;
+            } else {
+                studentLogs.forEach(log => {
+                    logsList.innerHTML += `
+                        <tr class="border-b hover:bg-slate-50 text-sm">
+                            <td class="p-3 font-semibold">${log.date}</td>
+                            <td class="p-3">${log.type === 'daily' ? 'विद्यालय हाजिरी' : 'विषयगत हाजिरी'}</td>
+                            <td class="p-3 font-bold">${log.subject}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-1 rounded text-xs font-bold ${log.status === 'Present' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                    ${log.status === 'Present' ? 'उपस्थित' : 'अनुपस्थित'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // ================= NOTIFICATION SYSTEM (Web Push & Banner) =================
+        function checkNotificationSupport() {
+            if (!("Notification" in window)) {
+                document.getElementById("pNotifBtn").style.display = "none";
+            }
+        }
+
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("नोटिफिकेसन सुचारु भयो! अब विद्यालयबाट आउने सूचना ब्राउजरमा पपअप हुनेछ।");
+                    } else {
+                        alert("नोटिफिकेसन अनुमति अस्वीकार गरियो।");
+                    }
+                });
+            }
+        }
+
+        function showBannerNotification(title, body) {
+            document.getElementById("bannerTitle").innerText = title;
+            document.getElementById("bannerBody").innerText = body;
+            document.getElementById("notifBanner").classList.remove("hidden");
+        }
+
+        function closeBanner() {
+            document.getElementById("notifBanner").classList.add("hidden");
+        }
+
+        function sendBrowserNotification(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification(title, {
+                    body: body,
+                    icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                });
+            }
+        }
+    </script>
+</body>
+</html>
